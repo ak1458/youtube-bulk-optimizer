@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Bulk Optimizer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-section">
+                <h1>📺 YT BULK OPTIMIZER</h1>
+                <p>Bulk Playlist Organizer & SEO Metadata Publisher • 2026 Edition</p>
+            </div>
+            
+            <!-- Channel Widget -->
+            <div class="channel-widget" id="channel-widget-container">
+                <img id="channel-avatar-img" class="channel-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23242731'/></svg>" alt="Channel Avatar">
+                <div class="channel-info">
+                    <span id="channel-name-txt" class="channel-name">Checking connection...</span>
+                    <div class="channel-meta">
+                        <span id="channel-subs-txt">-- subscribers</span>
+                        <span id="channel-status-badge" class="badge-disconnected">Offline</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button class="btn btn-secondary" onclick="fetchData()">🔄 Refresh Stats</button>
+            </div>
+        </header>
+
+        <!-- Scheduler Warning Banner -->
+        <div id="scheduler-banner" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <span style="font-size: 1.5rem;">📅</span>
+                <div>
+                    <strong style="color: var(--danger); font-size: 0.95rem;">YouTube API Quota Limit Exceeded</strong>
+                    <div id="scheduler-banner-text" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                        Auto-resume is scheduled to run at: - (in -)
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" onclick="cancelResume()">Cancel Auto-Run</button>
+            </div>
+        </div>
+
+        <!-- Stats Overview Row -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-title">Total Videos <span>🎥</span></div>
+                <div class="card-value" id="stat-total-videos">-</div>
+                <div class="card-desc" id="stat-video-split">Long: - | Shorts: -</div>
+            </div>
+            <div class="card">
+                <div class="card-title">SEO Updates Pending <span>⚡</span></div>
+                <div class="card-value" style="color: var(--warning);" id="stat-seo-pending">-</div>
+                <div class="card-desc">Videos with missing desc + generic titles</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Playlist Progress <span>📁</span></div>
+                <div class="card-value" id="stat-playlist-progress">-</div>
+                <div class="progress-wrapper">
+                    <div class="progress-bar-container">
+                        <div class="progress-fill" id="sync-progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">API Quota Usage <span>🔋</span></div>
+                <div class="card-value" id="stat-quota-value">- / 10,000</div>
+                <div class="progress-wrapper">
+                    <div class="progress-bar-container">
+                        <div class="quota-progress-fill" id="quota-progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="card-desc" id="stat-quota-desc">Resets daily at 8:00 AM UTC (1:30 PM IST)</div>
+            </div>
+        </div>
+
+        <!-- Main Controls Panel -->
+        <div class="controls-layout">
+            <!-- Playlist Syncer Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Playlist Organization Control</div>
+                </div>
+                <p class="helper-text">
+                    Organizes your Long Videos into game-specific cinematic collections and all Shorts into <em>"Gaming Shorts | Chill & Epic Moments"</em>.
+                </p>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label>Batch Limit (Quota Safety)</label>
+                    <select id="playlist-limit-select" class="text-input">
+                        <option value="5">5 Videos (Test run)</option>
+                        <option value="50">50 Videos (Medium batch)</option>
+                        <option value="100" selected>100 Videos (Default batch)</option>
+                        <option value="150">150 Videos (Max recommended)</option>
+                    </select>
+                </div>
+
+                <div class="flex-gap">
+                    <button class="btn btn-secondary" onclick="runPlaylistSync(true)">🔍 Dry Run Mapping</button>
+                    <button class="btn btn-success" onclick="runPlaylistSync(false)">🚀 Sync to YouTube</button>
+                </div>
+            </div>
+
+            <!-- SEO Controls Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">SEO Content Publisher</div>
+                </div>
+                <p class="helper-text">
+                    Applies the updated titles, descriptions, and tags to YouTube. Note: This will only update the pending videos listed below.
+                </p>
+                <div style="margin-bottom: 1.5rem;">
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Status: </span>
+                    <span id="seo-update-status" style="color: var(--success); font-weight: 600; font-size: 0.85rem;">Ready</span>
+                </div>
+                <div>
+                    <button class="btn" style="width: 100%;" onclick="runSeoUpdate()">📤 Publish Pending SEO Updates</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Output -->
+        <div class="panel" style="margin-bottom: 2rem;">
+            <div class="panel-header">
+                <div class="panel-title">Live Process Console Log</div>
+                <button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="clearConsole()">Clear Console</button>
+            </div>
+            <div class="log-terminal" id="console-output">
+                <div class="log-entry info">[SYSTEM] Ready. Select an action to begin.</div>
+            </div>
+        </div>
+
+        <!-- SEO Edit Table Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">SEO Editor: Pending Videos & Shorts</div>
+                <button class="btn btn-success" onclick="saveMetadataChanges()">💾 Save Changes to CSV</button>
+            </div>
+            <p class="helper-text">
+                Below are the <strong>pending videos</strong> needing optimization. You can refine their titles, descriptions, or tags directly in this table before publishing.
+            </p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">ID</th>
+                            <th style="width: 25%;">Original Title</th>
+                            <th style="width: 25%;">New Title (Editable)</th>
+                            <th style="width: 25%;">New Description (Editable)</th>
+                            <th style="width: 15%;">Tags (Editable)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="seo-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading pending videos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- AJAX Implementation -->
+    <script>
+        let videosData = [];
+
+        window.onload = function() {
+            fetchData();
+        };
+
+        function addLog(message, type = 'info') {
+            const consoleBox = document.getElementById('console-output');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleBox.appendChild(entry);
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '<div class="log-entry info">[SYSTEM] Console cleared.</div>';
+        }
+
+        function fetchData() {
+            addLog("Fetching channel statistics and pending videos...", "info");
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => {
+                    // Update Channel Info widget
+                    if (data.channel && data.channel.authenticated) {
+                        document.getElementById('channel-avatar-img').src = data.channel.logo || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2310b981'/></svg>";
+                        document.getElementById('channel-name-txt').innerText = data.channel.name;
+                        document.getElementById('channel-subs-txt').innerText = `${data.channel.subs} subscribers`;
+                        
+                        const badge = document.getElementById('channel-status-badge');
+                        badge.className = 'badge-connected';
+                        badge.innerText = 'Connected';
+                    } else {
+                        document.getElementById('channel-avatar-img').src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23ef4444'/></svg>";
+                        document.getElementById('channel-name-txt').innerText = 'Not Connected';
+                        document.getElementById('channel-subs-txt').innerText = '-- subscribers';
+                        
+                        const badge = document.getElementById('channel-status-badge');
+                        badge.className = 'badge-disconnected';
+                        badge.innerText = 'Offline';
+                    }
+
+                    // Update numeric stats
+                    document.getElementById('stat-total-videos').innerText = data.total_videos;
+                    document.getElementById('stat-video-split').innerText = `Long: ${data.long_videos} | Shorts: ${data.shorts}`;
+                    document.getElementById('stat-seo-pending').innerText = data.pending_seo_count;
+                    
+                    const progressVal = `${data.playlist_synced} / ${data.total_videos}`;
+                    document.getElementById('stat-playlist-progress').innerText = progressVal;
+                    
+                    const percent = data.total_videos > 0 ? (data.playlist_synced / data.total_videos) * 100 : 0;
+                    document.getElementById('sync-progress-bar').style.width = `${percent}%`;
+
+                    // Update Quota status card
+                    if (data.quota) {
+                        const used = data.quota.used;
+                        const limit = data.quota.limit;
+                        document.getElementById('stat-quota-value').innerText = `${used.toLocaleString()} / ${limit.toLocaleString()}`;
+                        
+                        const quotaPercent = (used / limit) * 100;
+                        const fill = document.getElementById('quota-progress-bar-fill');
+                        fill.style.width = `${quotaPercent}%`;
+                        
+                        if (used >= limit) {
+                            fill.style.backgroundColor = 'var(--danger)';
+                            document.getElementById('stat-quota-value').style.color = 'var(--danger)';
+                        } else if (used >= limit * 0.8) {
+                            fill.style.backgroundColor = 'var(--warning)';
+                            document.getElementById('stat-quota-value').style.color = 'var(--warning)';
+                        } else {
+                            fill.style.backgroundColor = 'var(--primary)';
+                            document.getElementById('stat-quota-value').style.color = 'var(--text-primary)';
+                        }
+                    }
+
+                    // Update Scheduler Status Banner
+                    const banner = document.getElementById('scheduler-banner');
+                    const bannerText = document.getElementById('scheduler-banner-text');
+                    
+                    if (data.scheduler && data.scheduler.is_scheduled) {
+                        banner.style.display = 'flex';
+                        bannerText.innerText = `Auto-resume is scheduled to run at: ${data.scheduler.scheduled_at} (${data.scheduler.countdown}).`;
+                    } else {
+                        banner.style.display = 'none';
+                    }
+
+                    // Update Table
+                    renderSeoTable(data.pending_videos);
+                    videosData = data.pending_videos;
+                    addLog("Stats successfully updated!", "success");
+                })
+                .catch(err => {
+                    addLog("Error fetching statistics: " + err, "error");
+                });
+        }
+
+        function cancelResume() {
+            addLog("Cancelling scheduled auto-resume...", "info");
+            fetch('/api/cancel-resume', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        addLog("Auto-resume successfully cancelled.", "success");
+                        fetchData();
+                    }
+                })
+                .catch(err => {
+                    addLog("Failed to cancel auto-resume: " + err, "error");
+                });
+        }
+
+        function renderSeoTable(videos) {
+            const tbody = document.getElementById('seo-table-body');
+            tbody.innerHTML = '';
+            
+            if (videos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--success); padding: 2rem;">🎉 No videos pending! All videos are fully optimized.</td></tr>';
+                return;
+            }
+
+            videos.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><a href="https://youtu.be/${v.video_id}" target="_blank" style="color: var(--info); text-decoration: none; font-weight: 500;">${v.video_id}</a></td>
+                    <td style="color: var(--text-secondary); font-size: 0.85rem;">${v.current_title}</td>
+                    <td>
+                        <input type="text" class="text-input" value="${v.new_title}" onchange="updateLocalValue('${v.video_id}', 'new_title', this.value)">
+                    </td>
+                    <td>
+                        <textarea class="text-input textarea-input" onchange="updateLocalValue('${v.video_id}', 'new_description', this.value)">${v.new_description}</textarea>
+                    </td>
+                    <td>
+                        <input type="text" class="text-input" value="${v.tags}" onchange="updateLocalValue('${v.video_id}', 'tags', this.value)">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateLocalValue(videoId, key, value) {
+            const video = videosData.find(v => v.video_id === videoId);
+            if (video) {
+                video[key] = value;
+            }
+        }
+
+        function saveMetadataChanges() {
+            addLog("Saving changes to CSV file...", "info");
+            fetch('/api/save-metadata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(videosData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addLog("Changes successfully saved to videos_update.csv!", "success");
+                    fetchData();
+                } else {
+                    addLog("Failed to save changes: " + data.message, "error");
+                }
+            })
+            .catch(err => {
+                addLog("Error saving changes: " + err, "error");
+            });
+        }
+
+        function runPlaylistSync(dryRun) {
+            const limit = document.getElementById('playlist-limit-select').value;
+            const actionText = dryRun ? "Dry Run Mapping" : "Live Playlist Sync";
+            
+            addLog(`Starting ${actionText} (Limit: ${limit})...`, "info");
+            
+            fetch('/api/sync-playlists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dry_run: dryRun, limit: parseInt(limit) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addLog(`${actionText} started in background. Task ID: ${data.task_id}`, "success");
+                    monitorTaskLogs(data.task_id);
+                } else {
+                    addLog(`Failed to start ${actionText}: ` + data.message, "error");
+                }
+            })
+            .catch(err => {
+                addLog(`Error starting ${actionText}: ` + err, "error");
+            });
+        }
+
+        function runSeoUpdate() {
+            addLog("Starting live SEO publishing to YouTube...", "info");
+            fetch('/api/update-seo', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addLog(`SEO Publisher started in background. Task ID: ${data.task_id}`, "success");
+                    monitorTaskLogs(data.task_id);
+                } else {
+                    addLog("Failed to start SEO publishing: " + data.message, "error");
+                }
+            })
+            .catch(err => {
+                addLog("Error starting SEO updates: " + err, "error");
+            });
+        }
+
+        function monitorTaskLogs(taskId) {
+            const interval = setInterval(() => {
+                fetch(`/api/task-status?task_id=${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Render any new log lines
+                    if (data.logs && data.logs.length > 0) {
+                        data.logs.forEach(line => {
+                            let type = 'info';
+                            if (line.toLowerCase().includes('failed') || line.toLowerCase().includes('error')) {
+                                type = 'error';
+                            } else if (line.toLowerCase().includes('success') || line.toLowerCase().includes('completed')) {
+                                type = 'success';
+                            }
+                            addLog(line, type);
+                        });
+                    }
+
+                    if (data.status !== 'running') {
+                        clearInterval(interval);
+                        addLog(`Process completed with status: ${data.status.toUpperCase()}`, data.status === 'done' ? 'success' : 'error');
+                        fetchData(); // Refresh stats
+                    }
+                })
+                .catch(err => {
+                    clearInterval(interval);
+                    addLog("Console disconnect: " + err, "error");
+                });
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

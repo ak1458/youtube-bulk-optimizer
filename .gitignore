@@ -1,0 +1,23 @@
+# OAuth & API Credentials (SENSITIVE)
+token.json
+token_readonly.json
+client_secret.json
+
+# Local App State & Cache
+quota_usage.json
+playlist_sync_status.json
+
+# CSV Data Files (Channel-specific metadata)
+*.csv
+
+# Python environment & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+.venv/
+env/
+venv/
+.idea/
+.vscode/
