@@ -6,7 +6,7 @@ import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
 
-CLIENT_SECRETS_FILE = r"D:\gravity\Youtube Optimizer\YT bulk\client_secret.json"
+CLIENT_SECRETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "client_secret.json")
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 MAX_VIDEOS_PER_RUN = 200
 

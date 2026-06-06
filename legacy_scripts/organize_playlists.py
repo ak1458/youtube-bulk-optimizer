@@ -14,7 +14,7 @@ import googleapiclient.errors
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-CLIENT_SECRETS_FILE = r"D:\gravity\Youtube Optimizer\YT bulk\client_secret.json"
+CLIENT_SECRETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "client_secret.json")
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
 # Target Playlists Configuration

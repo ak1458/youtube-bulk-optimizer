@@ -1,23 +1,87 @@
+# ========================================
 # OAuth & API Credentials (SENSITIVE)
+# ========================================
+client_secret.json
 token.json
 token_readonly.json
-client_secret.json
+*.p12
+*.pem
 
+# ========================================
+# Environment Variables
+# ========================================
+.env
+.env.*
+!.env.example
+
+# ========================================
 # Local App State & Cache
+# ========================================
 quota_usage.json
 playlist_sync_status.json
 
-# CSV Data Files (Channel-specific metadata)
+# ========================================
+# CSV Data Files (Channel-specific)
+# ========================================
 *.csv
 
+# ========================================
 # Python environment & cache
+# ========================================
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.ipynb_checkpoints/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ========================================
+# Virtual Environments
+# ========================================
 .venv/
 env/
 venv/
+ENV/
+
+# ========================================
+# IDE & Editor Settings
+# ========================================
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# ========================================
+# OS-specific files
+# ========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ========================================
+# Logs
+# ========================================
+*.log
+logs/

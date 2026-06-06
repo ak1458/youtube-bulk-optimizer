@@ -32,7 +32,7 @@ A high-performance, developer-centric desktop dashboard designed to automate bul
 ## 🛠️ Project Directory Tree
 
 ```
-D:\gravity\Youtube Optimizer\YT bulk\
+youtube-bulk-optimizer/
 ├── core\
 │   ├── oauth_handler.py     # Secure Google OAuth handler & token refresher
 │   ├── playlist_manager.py  # Playlist creation, visibility, and batch video mappings
