@@ -1,13 +1,28 @@
-﻿# YouTube Bulk Optimizer
-
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
-
-Automate bulk YouTube video playlist organization and SEO metadata optimization.
 
 ### Stack
 
-Python â€¢ YouTube API â€¢ SEO Tools
+Python • YouTube API • SEO Tools
 
 ### Local development
 
 Check the `CONTRIBUTING.md` file for details on how to set up the project locally and start contributing.
+
+---
+
+﻿# ðŸš€ YouTube Bulk Optimizer
+
+Automate bulk YouTube video playlist organization and SEO metadata optimization.
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
+
+## ðŸŒŸ Features
+* Comprehensive implementation tailored for modern standards.
+* Secure and optimized for performance.
+* Clean architecture and easy to maintain.
+
+## ðŸ’» Tech Stack
+This project is built using **Python** and follows best practices for modern development.
+
+## ðŸ› ï¸ Getting Started
+Check the CONTRIBUTING.md file for details on how to set up the project locally and start contributing.
